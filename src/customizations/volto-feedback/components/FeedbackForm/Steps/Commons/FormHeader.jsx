@@ -1,3 +1,5 @@
+import cx from 'classnames';
+
 const FormHeader = ({ title, step, totalSteps, className, hidden }) => {
   return (
     <div className={className}>
