@@ -80,8 +80,8 @@ const CommentsStep = ({
                 autoFocus={step === 1}
                 id="comment"
                 label={intl.formatMessage(messages.label_comment)}
-                aria-invalid={invalid}
-                invalid={invalid}
+                aria-invalid={invalid ? invalid : undefined}
+                invalid={invalid ? invalid : undefined}
                 className="mt-1"
                 data-element="feedback-input-text"
               />
