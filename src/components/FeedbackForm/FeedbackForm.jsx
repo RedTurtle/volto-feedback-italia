@@ -289,7 +289,7 @@ const FeedbackForm = ({ contentType, pathname }) => {
                         </h2>
                       </CardHeader>
 
-                      <CardBody className="p-0">
+                      <CardBody className="rating-container p-0">
                         <Rating
                           name="satisfaction"
                           value={satisfaction}

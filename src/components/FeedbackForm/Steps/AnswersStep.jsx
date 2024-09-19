@@ -83,7 +83,7 @@ const AnswersStep = ({
           }
           hidden={!positiveIsVisible}
         />
-        <Card teaser noWrapper>
+        <Card teaser noWrapper className="p-2">
           <Form className="answers-form">
             {state?.map((s, i) => (
               <FormGroup
@@ -130,7 +130,7 @@ const AnswersStep = ({
           hidden={!negativeIsVisible}
         />
 
-        <Card teaser noWrapper>
+        <Card teaser noWrapper className="p-2">
           <Form className="answers-form">
             {state?.map((s, i) => (
               <FormGroup

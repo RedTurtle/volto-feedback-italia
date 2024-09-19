@@ -59,36 +59,32 @@ const CommentsStep = ({
         className="comments-header d-flex justify-content-between align-items-center"
         hidden={step !== 1}
       />
-      <div className="comment w-100">
-        <Card teaser noWrapper>
-          <Form>
-            <FormGroup key={`step-${step}-comment`}>
-              <TextArea
-                placeholder={intl.formatMessage(
-                  messages.suggestions_placeholder,
-                )}
-                onChange={handleChange}
-                rows={3}
-                value={getFormFieldValue('comment')}
-                infoText={
-                  !invalid
-                    ? intl.formatMessage(messages.infotext_valid)
-                    : intl.formatMessage(messages.infotext_invalid)
-                }
-                tabIndex="0"
-                // eslint-disable-next-line jsx-a11y/no-autofocus
-                autoFocus={step === 1}
-                id="comment"
-                label={intl.formatMessage(messages.label_comment)}
-                aria-invalid={invalid ? invalid : undefined}
-                invalid={invalid ? invalid : undefined}
-                className="mt-1"
-                data-element="feedback-input-text"
-              />
-            </FormGroup>
-          </Form>
-        </Card>
-      </div>
+      <Card noWrapper className="comment p-3">
+        <Form>
+          <FormGroup key={`step-${step}-comment`}>
+            <TextArea
+              placeholder={intl.formatMessage(messages.suggestions_placeholder)}
+              onChange={handleChange}
+              rows={3}
+              value={getFormFieldValue('comment')}
+              infoText={
+                !invalid
+                  ? intl.formatMessage(messages.infotext_valid)
+                  : intl.formatMessage(messages.infotext_invalid)
+              }
+              tabIndex="0"
+              // eslint-disable-next-line jsx-a11y/no-autofocus
+              autoFocus={step === 1}
+              id="comment"
+              label={intl.formatMessage(messages.label_comment)}
+              aria-invalid={invalid ? invalid : undefined}
+              invalid={invalid ? invalid : undefined}
+              className="mt-1"
+              data-element="feedback-input-text"
+            />
+          </FormGroup>
+        </Form>
+      </Card>
     </fieldset>
   );
 };
