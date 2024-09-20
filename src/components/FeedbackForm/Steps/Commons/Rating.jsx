@@ -24,6 +24,7 @@ const Rating = ({
 
   const wrapperClasses = classNames(wrapperClassName, {
     'rating-read-only': readOnly,
+    'rating-label': legend,
   });
   const fieldClasses = classNames(className);
   const extraFieldAttrs = readOnly ? { 'aria-hidden': true } : {};
