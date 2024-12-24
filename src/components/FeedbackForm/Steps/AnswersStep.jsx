@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import cx from 'classnames';
 import { defineMessages } from 'react-intl';
-import { usePrevious } from '@plone/volto/helpers';
+import { usePrevious } from '@plone/volto/helpers/Utils/usePrevious';
 import { Form, FormGroup, Label, Card } from 'design-react-kit';
 
 import {

@@ -5,7 +5,7 @@ import { useIntl, defineMessages } from 'react-intl';
 import cx from 'classnames';
 import { PropTypes } from 'prop-types';
 
-import { isCmsUi } from '@plone/volto/helpers';
+import { isCmsUi } from '@plone/volto/helpers/Url/Url';
 
 import {
   Container,
