@@ -1,6 +1,6 @@
 # volto-feedback-italia
 
-A volto addon that applies AGID styles on volto-feedback addon with design-react-kit and bootstrap-italia.
+A volto addon that applies AGID styles on [volto-feedback](https://github.com/RedTurtle/volto-feedback) addon with design-react-kit and bootstrap-italia.
 ![volto-feedback-italia](/docs/volto-feedback-italia.png)
 
 
