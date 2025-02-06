@@ -61,6 +61,11 @@ msgstr ""
 msgid "feedback_error"
 msgstr ""
 
+#. Default: "Feedback form"
+#: components/FeedbackForm/FeedbackForm
+msgid "feedback_form_aria_title"
+msgstr ""
+
 #. Default: "Next"
 #: components/FeedbackForm/FeedbackForm
 msgid "feedback_form_button_next"

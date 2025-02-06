@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Plone\n"
-"POT-Creation-Date: 2024-06-07T12:34:22.258Z\n"
+"POT-Creation-Date: 2025-02-06T11:43:23.156Z\n"
 "Last-Translator: Plone i18n <plone-i18n@lists.sourceforge.net>\n"
 "Language-Team: Plone i18n <plone-i18n@lists.sourceforge.net>\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -61,6 +61,11 @@ msgstr ""
 #. Default: "Error"
 #: components/FeedbackForm/FeedbackForm
 msgid "feedback_error"
+msgstr ""
+
+#. Default: "Feedback form"
+#: components/FeedbackForm/FeedbackForm
+msgid "feedback_form_aria_title"
 msgstr ""
 
 #. Default: "Next"

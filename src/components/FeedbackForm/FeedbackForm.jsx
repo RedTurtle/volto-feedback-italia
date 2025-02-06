@@ -121,6 +121,10 @@ const messages = defineMessages({
     id: 'feedback_error',
     defaultMessage: 'Error',
   },
+  aria_feedback_form: {
+    id: 'feedback_form_aria_title',
+    defaultMessage: 'Feedback form',
+  },
 });
 
 const FeedbackForm = ({ contentType, pathname }) => {
@@ -262,7 +266,11 @@ const FeedbackForm = ({ contentType, pathname }) => {
       <Container>
         <Row className="d-flex justify-content-center bg-primary">
           <Col className="col-12 col-lg-6">
-            <div className="feedback-form m-0" role="form">
+            <div
+              className="feedback-form m-0"
+              role="form"
+              aria-label={intl.formatMessage(messages.aria_feedback_form)}
+            >
               <Card className="shadow card-wrapper" data-element="feedback">
                 {!submitResults?.loading &&
                   !submitResults.loaded &&

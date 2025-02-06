@@ -61,6 +61,11 @@ msgstr "Le indicazioni erano complete"
 msgid "feedback_error"
 msgstr "Errore"
 
+#. Default: "Feedback form"
+#: components/FeedbackForm/FeedbackForm
+msgid "feedback_form_aria_title"
+msgstr "Modulo di soddisfazione"
+
 #. Default: "Next"
 #: components/FeedbackForm/FeedbackForm
 msgid "feedback_form_button_next"
