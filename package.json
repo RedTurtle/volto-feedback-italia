@@ -45,6 +45,6 @@
   },
   "peerDependencies": {
     "@plone/volto": "^17.0.0",
-    "volto-feedback": "^0.3.2"
+    "volto-feedback": "^0.6.0"
   }
 }

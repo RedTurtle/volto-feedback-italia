@@ -24,6 +24,8 @@ import {
   submitFeedback,
   resetSubmitFeedback,
   getFeedbackThreshold,
+  isFeedbackEnabledForRoute,
+  getStaticFeedbackRouteTitle,
 } from 'volto-feedback';
 
 import { AnswersStep, CommentsStep, Rating } from 'volto-feedback-italia';
@@ -35,9 +37,9 @@ const messages = defineMessages({
     id: 'feedback_form_title',
     defaultMessage: 'How clear is the information on this page?',
   },
-  service_title: {
-    id: 'feedback_form_title_service',
-    defaultMessage: 'How easy was it to use this service?',
+  aria_title_feedback: {
+    id: 'feedback_form_aria_title',
+    defaultMessage: 'Feedback form',
   },
   yes: {
     id: 'feedback_form_yes',
@@ -121,13 +123,9 @@ const messages = defineMessages({
     id: 'feedback_error',
     defaultMessage: 'Error',
   },
-  aria_feedback_form: {
-    id: 'feedback_form_aria_title',
-    defaultMessage: 'Feedback form',
-  },
 });
 
-const FeedbackForm = ({ contentType, pathname }) => {
+const FeedbackForm = ({ title, contentType, pathname }) => {
   const intl = useIntl();
   const location = useLocation();
   const path = pathname ?? location.pathname ?? '/';
@@ -158,10 +156,13 @@ const FeedbackForm = ({ contentType, pathname }) => {
       if (!value) setInvalidForm(true);
       else setInvalidForm(false);
     }
-    setFormData({
-      ...formData,
-      [field]: value,
-    });
+
+    if (field) {
+      setFormData({
+        ...(formData ?? {}),
+        [field]: value,
+      });
+    }
   };
   const getFormFieldValue = (field) => formData?.[field] ?? undefined;
 
@@ -241,14 +242,27 @@ const FeedbackForm = ({ contentType, pathname }) => {
   const sendFormData = () => {
     if (invalidForm) return;
     setStep(2);
+    let content =
+      isFeedbackEnabledForRoute(path) && isCmsUi(path)
+        ? getStaticFeedbackRouteTitle(path)
+        : path;
+
+    if (typeof content === 'object' && content.id)
+      content = intl.formatMessage(content);
     const data = {
       ...formData,
-      ...(captcha && { 'g-recaptcha-response': validToken }),
+      ...(captcha ? { 'g-recaptcha-response': validToken } : {}),
       answer: getTranslatedQuestion(intl, formData.answer),
+      content,
     };
-    dispatch(submitFeedback(path, data));
+
+    dispatch(submitFeedback(data));
     resetFormData();
   };
+
+  if (!isFeedbackEnabledForRoute(path)) {
+    return null;
+  }
 
   let action = path?.length > 1 ? path.replace(/\//g, '') : path;
   if (action?.length > 0) {
@@ -257,216 +271,204 @@ const FeedbackForm = ({ contentType, pathname }) => {
     action = 'homepage';
   }
 
-  if (isCmsUi(path)) {
-    return null;
-  }
-
   return (
-    <section className="bg-primary customer-satisfaction">
-      <Container>
-        <Row className="d-flex justify-content-center bg-primary">
-          <Col className="col-12 col-lg-6">
-            <div
-              className="feedback-form m-0"
-              role="form"
-              aria-label={intl.formatMessage(messages.aria_feedback_form)}
-            >
-              <Card className="shadow card-wrapper" data-element="feedback">
-                {!submitResults?.loading &&
-                  !submitResults.loaded &&
-                  step !== 2 && (
-                    <>
-                      <CardHeader className="border-0 p-0 mb-3">
-                        <h2
-                          id="vf-radiogroup-label"
-                          className="title-medium-2-semi-bold mb-0"
-                          data-element="feedback-title"
-                        >
-                          {/* Il validatore a quanto pare fa il check per titolo.
-                            Il titolo da specifiche deve essere diverso per Servizi, ma loro non lo sanno
-                            https://github.com/italia/pa-website-validator/blob/main/src/storage/municipality/feedbackComponentStructure.ts#L8
-                        */}
-                          {/* {contentType === 'Servizio'
-                          ? intl.formatMessage(messages.service_title)
-                          : intl.formatMessage(messages.title)} */}
+    <div className="public-ui" id="customer-satisfaction-form">
+      <section className="bg-primary customer-satisfaction">
+        <Container>
+          <Row className="d-flex justify-content-center bg-primary">
+            <Col className="col-12 col-lg-6">
+              <div
+                className="feedback-form m-0"
+                role="form"
+                aria-label={intl.formatMessage(messages.aria_title_feedback)}
+              >
+                <Card className="shadow card-wrapper" data-element="feedback">
+                  {!submitResults?.loading &&
+                    !submitResults.loaded &&
+                    step !== 2 && (
+                      <>
+                        <CardHeader className="border-0 p-0 mb-3">
+                          <h2
+                            id="vf-radiogroup-label"
+                            className="title-medium-2-semi-bold mb-0"
+                            data-element="feedback-title"
+                          >
+                            {title || intl.formatMessage(messages.title)}
+                          </h2>
+                        </CardHeader>
 
-                          {/* Aggiunto titolo per compatibilità modello AGID di io-cittadino */}
-                          {contentType === 'ModelloPratica'
-                            ? intl.formatMessage(messages.service_title)
-                            : intl.formatMessage(messages.title)}
-                        </h2>
-                      </CardHeader>
+                        <CardBody className="rating-container p-0">
+                          <Rating
+                            name="satisfaction"
+                            value={satisfaction}
+                            // Qui l'implementazione di design react kit sta su con gli stecchini, rifatta
+                            inputs={[
+                              {
+                                name: 'star1b',
+                                value: 1,
+                              },
+                              {
+                                name: 'star2b',
+                                value: 2,
+                              },
+                              {
+                                name: 'star3b',
+                                value: 3,
+                              },
+                              {
+                                name: 'star4b',
+                                value: 4,
+                              },
+                              {
+                                name: 'star5b',
+                                value: 5,
+                              },
+                            ]}
+                            aria-controls={
+                              satisfaction > threshold
+                                ? 'vf-more-positive'
+                                : 'vf-more-negative'
+                            }
+                            className="volto-feedback-rating mb-0"
+                            onChangeRating={changeSatisfaction}
+                            legend={intl.formatMessage(messages.feedback)}
+                            wrapperClassName="rating"
+                          />
+                        </CardBody>
 
-                      <CardBody className="rating-container p-0">
-                        <Rating
-                          name="satisfaction"
-                          value={satisfaction}
-                          // Qui l'implementazione di design react kit sta su con gli stecchini, rifatta
-                          inputs={[
-                            {
-                              name: 'star1b',
-                              value: 1,
-                            },
-                            {
-                              name: 'star2b',
-                              value: 2,
-                            },
-                            {
-                              name: 'star3b',
-                              value: 3,
-                            },
-                            {
-                              name: 'star4b',
-                              value: 4,
-                            },
-                            {
-                              name: 'star5b',
-                              value: 5,
-                            },
-                          ]}
-                          aria-controls={
-                            satisfaction > threshold
-                              ? 'vf-more-positive'
-                              : 'vf-more-negative'
-                          }
-                          className="volto-feedback-rating mb-0"
-                          onChangeRating={changeSatisfaction}
-                          legend={intl.formatMessage(messages.feedback)}
-                          wrapperClassName="rating"
+                        <AnswersStep
+                          updateFormData={updateFormData}
+                          userFeedback={satisfaction}
+                          intl={intl}
+                          step={step}
+                          totalSteps={numberOfSteps}
+                          getFormFieldValue={getFormFieldValue}
                         />
-                      </CardBody>
-
-                      <AnswersStep
-                        updateFormData={updateFormData}
-                        userFeedback={satisfaction}
-                        intl={intl}
-                        step={step}
-                        totalSteps={numberOfSteps}
-                        getFormFieldValue={getFormFieldValue}
-                      />
-                      <CommentsStep
-                        updateFormData={updateFormData}
-                        userFeedback={satisfaction}
-                        intl={intl}
-                        step={step}
-                        totalSteps={numberOfSteps}
-                        getFormFieldValue={getFormFieldValue}
-                      />
-                      <HoneypotWidget
-                        updateFormData={updateFormData}
-                        field={fieldHoney}
-                      />
-                      <GoogleReCaptchaWidget
-                        key={action}
-                        onVerify={onVerifyCaptcha}
-                        action={action}
-                      />
-                      <div
-                        className={cx(
-                          'form-step-actions flex-nowrap w100 justify-content-center button-shadow',
-                          {
-                            'pt-4 d-flex': satisfaction,
-                            'd-none': !satisfaction,
-                          },
-                        )}
-                        aria-hidden={!satisfaction}
-                      >
-                        {/* Bug bottoni del kit. Disabled e' settato anche se compare la prop aria-disabled,
-                        quando lo scopo sarebbe continuare a poter usufruire dei focus anche in screen reader.
-                        Per i vedenti, la classe dimmed fa il suo lavoro e disabilita i click/input utente */}
-                        <button
-                          type="button"
-                          onClick={prevStep}
-                          disabled={false}
+                        <CommentsStep
+                          updateFormData={updateFormData}
+                          userFeedback={satisfaction}
+                          intl={intl}
+                          step={step}
+                          totalSteps={numberOfSteps}
+                          getFormFieldValue={getFormFieldValue}
+                        />
+                        <HoneypotWidget
+                          updateFormData={updateFormData}
+                          field={fieldHoney}
+                        />
+                        <GoogleReCaptchaWidget
+                          key={action}
+                          onVerify={onVerifyCaptcha}
+                          action={action}
+                        />
+                        <div
                           className={cx(
-                            'me-4 fw-bold btn btn-outline-primary',
+                            'form-step-actions flex-nowrap w100 justify-content-center button-shadow',
                             {
-                              disabled: step === 0,
+                              'pt-4 d-flex': satisfaction,
+                              'd-none': !satisfaction,
                             },
                           )}
-                          aria-disabled={!(!invalidForm && step !== 0)}
+                          aria-hidden={!satisfaction}
                         >
-                          {intl.formatMessage(messages.prev)}
-                        </button>
-
-                        {step !== numberOfSteps - 1 && (
+                          {/* Bug bottoni del kit. Disabled e' settato anche se compare la prop aria-disabled,
+                        quando lo scopo sarebbe continuare a poter usufruire dei focus anche in screen reader.
+                        Per i vedenti, la classe dimmed fa il suo lavoro e disabilita i click/input utente */}
                           <button
                             type="button"
-                            onClick={nextStep}
+                            onClick={prevStep}
                             disabled={false}
-                            aria-disabled={invalidForm}
-                            className={cx('fw-bold btn btn-primary', {
-                              disabled: invalidForm,
-                            })}
+                            className={cx(
+                              'me-4 fw-bold btn btn-outline-primary',
+                              {
+                                disabled: step === 0,
+                              },
+                            )}
+                            aria-disabled={!(!invalidForm && step !== 0)}
                           >
-                            {intl.formatMessage(messages.next)}
+                            {intl.formatMessage(messages.prev)}
                           </button>
-                        )}
-                        {step === numberOfSteps - 1 && (
-                          <button
-                            className={cx('fw-bold btn btn-primary', {
-                              disabled: invalidForm,
-                            })}
-                            type="submit"
-                            disabled={false}
-                            aria-disabled={invalidForm}
-                            onClick={sendFormData}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !invalidForm)
-                                sendFormData();
-                            }}
+
+                          {step !== numberOfSteps - 1 && (
+                            <button
+                              type="button"
+                              onClick={nextStep}
+                              disabled={false}
+                              aria-disabled={invalidForm}
+                              className={cx('fw-bold btn btn-primary', {
+                                disabled: invalidForm,
+                              })}
+                            >
+                              {intl.formatMessage(messages.next)}
+                            </button>
+                          )}
+                          {step === numberOfSteps - 1 && (
+                            <button
+                              className={cx('fw-bold btn btn-primary', {
+                                disabled: invalidForm,
+                              })}
+                              type="submit"
+                              disabled={false}
+                              aria-disabled={invalidForm}
+                              onClick={sendFormData}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !invalidForm)
+                                  sendFormData();
+                              }}
+                            >
+                              {intl.formatMessage(messages.next)}
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  {submitResults?.loading && (
+                    <div className="d-flex justify-content-center align-items-center">
+                      <Spinner double active />
+                    </div>
+                  )}
+                  {submitResults?.loaded && step === 2 && (
+                    <CardHeader className="border-0 mb-0 px-0">
+                      <h4
+                        id="rating-feedback"
+                        className="title-medium-2-semi-bold mb-0"
+                      >
+                        {intl.formatMessage(messages.thank_you)}
+                      </h4>
+                    </CardHeader>
+                  )}
+                  {step === 2 &&
+                    !submitResults?.loaded &&
+                    !submitResults.loading &&
+                    submitResults.error?.response?.body?.message && (
+                      <>
+                        <CardHeader className="border-0 mb-0 px-0">
+                          <h4
+                            id="rating-feedback"
+                            className="title-medium-2-semi-bold mb-0"
                           >
-                            {intl.formatMessage(messages.next)}
-                          </button>
-                        )}
-                      </div>
-                    </>
-                  )}
-                {submitResults?.loading && (
-                  <div className="d-flex justify-content-center align-items-center">
-                    <Spinner double active />
-                  </div>
-                )}
-                {submitResults?.loaded && step === 2 && (
-                  <CardHeader className="border-0 mb-0 px-0">
-                    <h4
-                      id="rating-feedback"
-                      className="title-medium-2-semi-bold mb-0"
-                    >
-                      {intl.formatMessage(messages.thank_you)}
-                    </h4>
-                  </CardHeader>
-                )}
-                {step === 2 &&
-                  !submitResults?.loaded &&
-                  !submitResults.loading &&
-                  submitResults.error?.response?.body?.message && (
-                    <>
-                      <CardHeader className="border-0 mb-0 px-0">
-                        <h4
-                          id="rating-feedback"
-                          className="title-medium-2-semi-bold mb-0"
-                        >
-                          {intl.formatMessage(messages.error)}{' '}
-                          {submitResults.error?.response.status}:{' '}
-                          {submitResults.error?.response.statusText}
-                        </h4>
-                      </CardHeader>
-                      <CardBody>
-                        {submitResults.error?.response?.body?.message}
-                      </CardBody>
-                    </>
-                  )}
-              </Card>
-            </div>
-          </Col>
-        </Row>
-      </Container>
-    </section>
+                            {intl.formatMessage(messages.error)}{' '}
+                            {submitResults.error?.response.status}:{' '}
+                            {submitResults.error?.response.statusText}
+                          </h4>
+                        </CardHeader>
+                        <CardBody>
+                          {submitResults.error?.response?.body?.message}
+                        </CardBody>
+                      </>
+                    )}
+                </Card>
+              </div>
+            </Col>
+          </Row>
+        </Container>
+      </section>
+    </div>
   );
 };
 
 FeedbackForm.propTypes = {
+  title: PropTypes.string,
   contentType: PropTypes.string,
   pathname: PropTypes.string,
 };

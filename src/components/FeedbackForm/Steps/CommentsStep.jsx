@@ -79,7 +79,7 @@ const CommentsStep = ({
               label={intl.formatMessage(messages.label_comment)}
               aria-invalid={invalid ? invalid : undefined}
               invalid={invalid ? invalid : undefined}
-              className="mt-1"
+              className="mt-1 d-flex flex-column"
               data-element="feedback-input-text"
             />
           </FormGroup>
