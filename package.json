@@ -1,6 +1,6 @@
 {
   "name": "volto-feedback-italia",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "volto-feedback-italia: Volto add-on",
   "main": "src/index.js",
   "license": "MIT",
