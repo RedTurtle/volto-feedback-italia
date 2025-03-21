@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { useIntl, defineMessages } from 'react-intl';
 import cx from 'classnames';
 import { PropTypes } from 'prop-types';
-
+import config from '@plone/volto/registry';
 import { isCmsUi } from '@plone/volto/helpers/Url/Url';
 
 import {
@@ -242,8 +242,15 @@ const FeedbackForm = ({ title, contentType, pathname }) => {
   const sendFormData = () => {
     if (invalidForm) return;
     setStep(2);
+
+    //verifico se config.settings.nonContentRoutesPublic è impostato, per retrocompatibilità con volto17 in cui questa prop non esisteva
+    let is_cms_ui =
+      (config.settings.nonContentRoutesPublic ?? [])?.length == 0
+        ? isCmsUi(path)
+        : true;
+
     let content =
-      isFeedbackEnabledForRoute(path) && isCmsUi(path)
+      isFeedbackEnabledForRoute(path) && is_cms_ui
         ? getStaticFeedbackRouteTitle(path)
         : path;
 
